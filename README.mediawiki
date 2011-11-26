@@ -1,0 +1,10 @@
+=SIMPLE MATHEMATICAL EXPRESSION CALCULATOR=
+
+'''This is a simple mathematical expresion calculator.'''
+
+* Feature:
+*# Has its own built-in arithmetic functions, which can calculate very big numbers (hundreds of digits).
+*# Uses stack-based mathematical expression parsing method (which is simple and fast).
+
+For now, the program's still not perfect yet due to its weak memory control. Will fix it as fast as I can. 
+
