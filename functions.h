@@ -20,7 +20,7 @@ typedef struct {
 	char digits;
 	char sign;
 } numType;
-enum TOKEN {lparen, rparen, oplus, ominus, omultiply, odivide, number, end, unknown};
+enum TOKEN {lparen, rparen, oplus, ominus, omultiply, odivide, number, end, omissible};
 typedef struct {
 	enum TOKEN type;
 	numType *value;

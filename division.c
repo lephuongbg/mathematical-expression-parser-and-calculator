@@ -45,6 +45,7 @@ numType *divide(numType *dividend, numType *divisor)
 	check_ptr(new_divisor);
 	new_divisor->sign = divisor->sign;
 	new_divisor->digits = (estDigits(dividend, divisor)+1)/2;
+	new_divisor->number = NULL;
 	new_divisor->number = realloc(new_divisor->number, new_divisor->digits*sizeof(char));
 	check_ptr(new_divisor->number);
 

@@ -95,7 +95,9 @@ instance *lexer(char *string)
 		default:
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
-			lexed[index].type = unknown;
+			//lexed[index].type = unknown;
+			printf("Unsupported character: %c\n", string[i]);
+			puts("Exiting..."); exit(1);
 			index++;
 			i++;
 			break;
@@ -109,6 +111,11 @@ instance *lexer(char *string)
 	return lexed;
 }
 
+/*CHECK THE VALIDITY OF THE LEXICAL ANALYSED RESULT*/
+instance *post_lexer(instance *lexed)
+{
+
+}
 /*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
 numType *do_math(enum TOKEN op, numType *n1, numType *n2)
 {
