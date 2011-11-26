@@ -180,7 +180,7 @@ void post_lexer(instance **lexed)
 		x++;
 	}
 	/*STANDARDIZE THE EXPRESSION*/
-	// add multiply operators when meeting the implication
+	// 1) add multiply operators when meeting the implication
 	x = 0;
 	while ((*lexed)[x].type != end)
 	{
@@ -190,7 +190,7 @@ void post_lexer(instance **lexed)
 			//advance every element from that point to the next position
 			n++;
 			(*lexed) = realloc((*lexed), n * sizeof(instance));
-			i = n;
+			i = n - 1;
 			while (i > x + 1)
 			{
 				(*lexed)[i].type = (*lexed)[i-1].type;
@@ -213,8 +213,49 @@ void post_lexer(instance **lexed)
 		}
 		x++;
 	}
+	// 2) convert the + and - before an open parentheses and after another operator to +1 and -1
+	x = 0;
+	while ((*lexed)[x].type != end)
+	{
+		if ((*lexed)[x].type == ominus || (*lexed)[x].type == oplus)
+			if (x - 1 > 0 && (*lexed)[x-1].type >= oplus && (*lexed)[x-1].type <= odivide)
+				if (x + 1 < n && (*lexed)[x+1].type == lparen)
+				{
+					//advance every element from that point to the next position
+					n++;
+					(*lexed) = realloc((*lexed), n * sizeof(instance));
+					check_ptr(*lexed);
+					i = n;
+					while (i > x + 1)
+					{
+						(*lexed)[i].type = (*lexed)[i-1].type;
+						if ((*lexed)[i].type == number)
+						{
+							(*lexed)[i].value = NULL;
+							(*lexed)[i].value = realloc((*lexed)[i].value, sizeof(numType));
+							(*lexed)[i].value->digits = (*lexed)[i-1].value->digits;
+							(*lexed)[i].value->sign = (*lexed)[i-1].value->sign;
+							(*lexed)[i].value->number = NULL;
+							(*lexed)[i].value->number = realloc((*lexed)[i].value->number, (*lexed)[i].value->digits * sizeof(char));
+							for (k = 0; k < (*lexed)[i].value->digits; k++)
+								(*lexed)[i].value->number[k] = (*lexed)[i-1].value->number[k];
+							(*lexed)[i-1].value = NULL;
+						}
+						i--;
+					}
+					//then add a multiply operator on the next position
+					(*lexed)[x+1].type = omultiply;
+					(*lexed)[x].value = NULL;
+					if ((*lexed)[x].type == ominus)
+						(*lexed)[x].value = extract(-1);
+					else
+						(*lexed)[x].value = extract(1);
+					(*lexed)[x].type = number;
+				}
+		x++;
+	}
 
-	//Construct the tight rules to validate the expression
+	//CONSTRUCT THE TIGHT RULES to validate the expression
 	x = 0;
 	while ((*lexed)[x].type != end)
 	{
@@ -222,11 +263,11 @@ void post_lexer(instance **lexed)
 		case lparen:
 			if (!((x-1<0)||(x - 1 >= 0 && (*lexed)[x-1].type >= oplus && (*lexed)[x-1].type <= odivide)))
 				err();
-			if (!(x + 1 < n - 1 && (*lexed)[x+1].type == number))
+			if (!(x + 1 < n - 1 && ((*lexed)[x+1].type == number || (*lexed)[x+1].type == lparen)))
 				err();
 			break;
 		case rparen:
-			if (!(x - 1 > 0 && (*lexed)[x-1].type == number))
+			if (!(x - 1 > 0 && ((*lexed)[x-1].type == number || (*lexed)[x-1].type == rparen)))
 				err();
 			if (!((x+1>=n)||(x + 1 < n  && (*lexed)[x+1].type >= oplus && (*lexed)[x+1].type <= odivide)))
 				err();
@@ -270,13 +311,14 @@ numType *do_math(enum TOKEN op, numType *n1, numType *n2)
 }
 
 /*PARSE THE MATHEMATICAL EXPRESSION AND RETURN THE RESULT*/
+//Using the stack-based parsing method
 numType *parser(char *string)
 {
 	instance *lexed = lexer(string); int k = 0;	//First convert the string to an array of tokens
 	numType *istack = NULL; int i = 0; 	//Integer stack
 	enum TOKEN *cstack = NULL; int c = 0;		//Character stack
 	numType *temp = NULL;
-	//do {
+
 	while (lexed[k].type != end)
 	{
 		if (lexed[k].type == lparen)
