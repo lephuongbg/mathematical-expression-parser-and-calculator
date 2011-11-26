@@ -5,6 +5,7 @@
 * Feature:
 *# Has its own built-in arithmetic functions, which can calculate very big numbers (hundreds of digits).
 *# Uses stack-based mathematical expression parsing method (which is simple and fast).
+*# Uses strict rules to validate mathematical expressions (prevent crashes)
 
 * Supported elements in the expression:
 *# Arithmetic operators: +, -, *, /
