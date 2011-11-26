@@ -33,6 +33,7 @@ numType *extract(int n);
 int num_comp(numType *n1, numType *n2);
 int abs_num_comp(numType *n1, numType *n2);
 void clone(numType *src, numType *des);
+void err();
 
 /*FOR ARITHMETIC*/
 numType *multiply(numType *n1, numType *n2);

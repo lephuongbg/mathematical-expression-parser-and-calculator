@@ -11,7 +11,7 @@ int main()
 {
 	numType *res2 = NULL;
 	int i = 0;
-	res2 = parser("(9 - 10) + 678");
+	res2 = parser("(2) -(-3) (2 + 8 - 1)");
 
 	if (res2->sign == -1)
 		printf("-");

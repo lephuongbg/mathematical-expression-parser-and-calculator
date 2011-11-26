@@ -145,3 +145,10 @@ void clone(numType *src, numType *des)
 	for (i = 0; i < (*des).digits; i++)
 		(*des).number[i] = src->number[i];
 }
+
+//Error report
+void err()
+{
+	fprintf(stderr, "Invalid mathematical expression!!!\nExiting...\n");
+	exit(1);
+}

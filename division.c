@@ -34,7 +34,7 @@ numType *divide(numType *dividend, numType *divisor)
 	new_dividend = realloc(new_dividend, sizeof(numType));
 	check_ptr(new_dividend);
 	new_dividend->sign = dividend->sign;
-	new_dividend->digits = 1 + (dividend->digits+1)/2;
+	new_dividend->digits = 2 + (dividend->digits+1)/2;
 	new_dividend->number = NULL;
 	new_dividend->number = realloc(new_dividend->number, new_dividend->digits*sizeof(char));
 	check_ptr(new_dividend->number);
@@ -44,7 +44,7 @@ numType *divide(numType *dividend, numType *divisor)
 	new_divisor = realloc(new_divisor, sizeof(numType));
 	check_ptr(new_divisor);
 	new_divisor->sign = divisor->sign;
-	new_divisor->digits = (estDigits(dividend, divisor)+1)/2;
+	new_divisor->digits = 1 + (estDigits(dividend, divisor)+1)/2;
 	new_divisor->number = NULL;
 	new_divisor->number = realloc(new_divisor->number, new_divisor->digits*sizeof(char));
 	check_ptr(new_divisor->number);
@@ -58,7 +58,7 @@ numType *divide(numType *dividend, numType *divisor)
 	divType *temp_result = NULL;
 	temp_result = realloc(temp_result, sizeof(divType));
 	check_ptr(temp_result);
-	temp_result->digits = (estDigits(dividend, divisor)+1)/2;
+	temp_result->digits = 1 + (estDigits(dividend, divisor)+1)/2;
 	temp_result->number = NULL;
 	temp_result->number = realloc(temp_result->number, temp_result->digits*sizeof(char));
 	check_ptr(temp_result->number);
@@ -115,7 +115,7 @@ numType *divide(numType *dividend, numType *divisor)
 	{
 		numTemp = add(multiply(final_result, extract(100)), extract(temp_result->number[k]));
 		free(final_result); final_result = NULL;
-		final_result = numTemp;
+		final_result = numTemp; numTemp = NULL;
 	}
 
 	final_result->digits = estDigits(dividend, divisor);

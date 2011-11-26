@@ -84,8 +84,16 @@ numType *substract(numType *minuend, numType *subtrahend)
 				result->number[k] %= 10;
 			}
 		} else {	//If not,
-			result->number[k] += minuend->number[i]; //bring the minuend's digits down to the result
-			carry_up = 0;
+			if (minuend->number[i] != -1)
+			{
+				result->number[k] += minuend->number[i]; //bring the minuend's digits down to the result
+				carry_up = 0;
+			} else
+			{
+				result->number[k] = 9;
+				carry_up = -1;
+			}
+
 		}
 	}
 

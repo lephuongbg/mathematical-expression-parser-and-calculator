@@ -132,6 +132,7 @@ void post_lexer(instance **lexed)
 		exit(1);
 	}
 
+	//Check for negative or positive number with sign
 	x = 0;
 	while ((*lexed)[x].type != end)
 	{
@@ -146,6 +147,107 @@ void post_lexer(instance **lexed)
 					(*lexed)[x-1].type = omissible;
 				}
 			}
+		}
+		x++;
+	}
+
+	//Remove omissible element from the array
+	int n = x;	//determine the number of elements.
+	x = 0; int i = 0; int k;
+	while ((*lexed)[x].type != end)
+	{
+		if ((*lexed)[x].type == omissible)
+		{
+			for (i = x; i < n; i++)
+			{
+				(*lexed)[i].type = (*lexed)[i+1].type;
+				if ((*lexed)[i].type == number)
+				{
+					(*lexed)[i].value = NULL;
+					(*lexed)[i].value = realloc((*lexed)[i].value, sizeof(numType));
+					(*lexed)[i].value->digits = (*lexed)[i+1].value->digits;
+					(*lexed)[i].value->sign = (*lexed)[i+1].value->sign;
+					(*lexed)[i].value->number = NULL;
+					(*lexed)[i].value->number = realloc((*lexed)[i].value->number, (*lexed)[i].value->digits * sizeof(char));
+					for (k = 0; k < (*lexed)[i].value->digits; k++)
+						(*lexed)[i].value->number[k] = (*lexed)[i+1].value->number[k];
+					(*lexed)[i+1].value = NULL;
+				}
+			}
+			n--;
+			(*lexed) = realloc((*lexed), n * sizeof(instance));
+		}
+		x++;
+	}
+	/*STANDARDIZE THE EXPRESSION*/
+	// add multiply operators when meeting the implication
+	x = 0;
+	while ((*lexed)[x].type != end)
+	{
+		//When encountering multiplying implicated condition
+		if (((*lexed)[x].type == number && x+1<n && (*lexed)[x+1].type == lparen) || ((*lexed)[x].type == rparen && (*lexed)[x+1].type == lparen) || ((*lexed)[x].type == rparen && (*lexed)[x+1].type == number))
+		{
+			//advance every element from that point to the next position
+			n++;
+			(*lexed) = realloc((*lexed), n * sizeof(instance));
+			i = n;
+			while (i > x + 1)
+			{
+				(*lexed)[i].type = (*lexed)[i-1].type;
+				if ((*lexed)[i].type == number)
+				{
+					(*lexed)[i].value = NULL;
+					(*lexed)[i].value = realloc((*lexed)[i].value, sizeof(numType));
+					(*lexed)[i].value->digits = (*lexed)[i-1].value->digits;
+					(*lexed)[i].value->sign = (*lexed)[i-1].value->sign;
+					(*lexed)[i].value->number = NULL;
+					(*lexed)[i].value->number = realloc((*lexed)[i].value->number, (*lexed)[i].value->digits * sizeof(char));
+					for (k = 0; k < (*lexed)[i].value->digits; k++)
+						(*lexed)[i].value->number[k] = (*lexed)[i-1].value->number[k];
+					(*lexed)[i-1].value = NULL;
+				}
+				i--;
+			}
+			//then add a multiply operator on the current position
+			(*lexed)[x+1].type = omultiply;
+		}
+		x++;
+	}
+
+	//Construct the tight rules to validate the expression
+	x = 0;
+	while ((*lexed)[x].type != end)
+	{
+		switch ((*lexed)[x].type) {
+		case lparen:
+			if (!((x-1<0)||(x - 1 >= 0 && (*lexed)[x-1].type >= oplus && (*lexed)[x-1].type <= odivide)))
+				err();
+			if (!(x + 1 < n - 1 && (*lexed)[x+1].type == number))
+				err();
+			break;
+		case rparen:
+			if (!(x - 1 > 0 && (*lexed)[x-1].type == number))
+				err();
+			if (!((x+1>=n)||(x + 1 < n  && (*lexed)[x+1].type >= oplus && (*lexed)[x+1].type <= odivide)))
+				err();
+			break;
+		case number:
+			if (!((x - 1 < 0)||(x - 1 >= 0 && (*lexed)[x-1].type >= lparen && (*lexed)[x-1].type <= odivide && (*lexed)[x-1].type != rparen)))
+				err();
+			if (!((x + 1 >= n)||(x + 1 < n && (*lexed)[x+1].type >= rparen && (*lexed)[x+1].type <= odivide)))
+				err();
+			break;
+		case oplus:
+		case ominus:
+		case omultiply:
+		case odivide:
+			if (!(x-1 >= 0 && ((*lexed)[x-1].type == number || (*lexed)[x-1].type == rparen)))
+				err();
+			if (!(x + 1 < n && ((*lexed)[x+1].type == number || (*lexed)[x+1].type == lparen)))
+				err();
+			break;
+		default:
+			break;
 		}
 		x++;
 	}
@@ -174,6 +276,7 @@ numType *parser(char *string)
 	numType *istack = NULL; int i = 0; 	//Integer stack
 	enum TOKEN *cstack = NULL; int c = 0;		//Character stack
 	numType *temp = NULL;
+	//do {
 	while (lexed[k].type != end)
 	{
 		if (lexed[k].type == lparen)
@@ -196,25 +299,30 @@ numType *parser(char *string)
 		}
 		if (lexed[k].type <= odivide && lexed[k].type >= oplus)	//Operator type
 		{
-			if (c == 0 || lexed[k].type/2 > cstack[c-1]/2)
+			while (c - 1 >= 0 && cstack[c-1]/2 >= lexed[k].type/2 && lexed[k].type/2 != 0)	//Compare priority
 			{
-				c++;
-				cstack = realloc(cstack, c * sizeof(enum TOKEN));
-				check_ptr(cstack);
-				cstack[c-1] = lexed[k].type;
-				k++;
-				continue;
-			} else {
 				temp = do_math(cstack[c-1], &istack[i-2], &istack[i-1]);
 				clone(temp, &istack[i-2]);
+				c--;
+				if (c == 0)
+				{
+					free(cstack); cstack = NULL;
+				} else {
+					cstack = realloc(cstack, c * sizeof(enum TOKEN));
+					check_ptr(cstack);
+				}
 				i--;
 				istack = realloc(istack, i * sizeof(numType));
 				check_ptr(istack);
-				cstack[c-1] = lexed[k].type;
-				k++;
 				free(temp);
-				continue;
 			}
+			c++;
+			cstack = realloc(cstack, c * sizeof(enum TOKEN));
+			check_ptr(cstack);
+			cstack[c-1] = lexed[k].type;
+			k++;
+			continue;
+
 		}
 		if (lexed[k].type == rparen)
 		{
@@ -247,10 +355,11 @@ numType *parser(char *string)
 			continue;
 		}
 	}
+
 	//Do last operation
-	while (c != 0)
+	while (c - 1 >= 0)
 	{
-		temp = do_math(cstack[c-1], &istack[i-2], &istack[i-1]);
+		temp = do_math(cstack[c - 1], &istack[i - 2], &istack[i - 1]);
 		clone (temp, &istack[i-2]);
 		i--;
 		c--;
