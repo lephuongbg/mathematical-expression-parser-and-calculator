@@ -139,7 +139,7 @@ void post_lexer(instance **lexed)
 		{
 			if (x - 1 >= 0 && ((*lexed)[x-1].type == ominus || (*lexed)[x-1].type == oplus))
 			{
-				if ((x-2 >= 0 && (*lexed)[x-2].type < number) || x-2 < 0)
+				if ((x-2 >= 0 && (*lexed)[x-2].type < number && (*lexed)[x-2].type != rparen) || x-2 < 0)
 				{
 					if ((*lexed)[x-1].type == ominus)
 						(*lexed)[x].value->sign = -1;
@@ -236,7 +236,7 @@ numType *parser(char *string)
 				check_ptr(cstack);
 			} else
 			{
-				free(cstack);
+				free(cstack); cstack = NULL;
 			}
 			k++;
 			continue;
