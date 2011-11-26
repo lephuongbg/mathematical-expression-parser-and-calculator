@@ -137,9 +137,6 @@ int abs_num_comp(numType *n1, numType *n2)
 //Clone a number
 void clone(numType *src, numType *des)
 {
-	//des = NULL;
-	//des = realloc(des, sizeof(numType));
-	//check_ptr(des);
 	(*des).digits = src->digits;
 	(*des).sign = src->sign;
 	(*des).number = NULL;

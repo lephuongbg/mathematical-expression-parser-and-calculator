@@ -96,8 +96,8 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			//lexed[index].type = unknown;
-			printf("Unsupported character: %c\n", string[i]);
-			puts("Exiting..."); exit(1);
+			printf("Unsupported character: %c\n Exiting...\n", string[i]);
+			exit(1);
 			index++;
 			i++;
 			break;
@@ -107,13 +107,48 @@ instance *lexer(char *string)
 	lexed = realloc(lexed, (index + 1) * sizeof(instance));
 	check_ptr(lexed);
 	lexed[index].type = end;
-
+	void post_lexer(instance **);
+	post_lexer(&lexed);
 	return lexed;
 }
 
 /*CHECK THE VALIDITY OF THE LEXICAL ANALYSED RESULT*/
-instance *post_lexer(instance *lexed)
+void post_lexer(instance **lexed)
 {
+	int x = 0;
+	//Check for unbalanced parentheses' pairs.
+	int open_paren = 0, close_paren = 0;
+	while ((*lexed)[x].type != end)
+	{
+		if ((*lexed)[x].type == lparen)
+			open_paren++;
+		else if ((*lexed)[x].type == rparen)
+			close_paren++;
+		x++;
+	}
+	if (open_paren != close_paren)
+	{
+		fprintf(stderr, "Unbalanced parentheses!!!\nExiting...\n");
+		exit(1);
+	}
+
+	x = 0;
+	while ((*lexed)[x].type != end)
+	{
+		if ((*lexed)[x].type == number)
+		{
+			if (x - 1 >= 0 && ((*lexed)[x-1].type == ominus || (*lexed)[x-1].type == oplus))
+			{
+				if ((x-2 >= 0 && (*lexed)[x-2].type < number) || x-2 < 0)
+				{
+					if ((*lexed)[x-1].type == ominus)
+						(*lexed)[x].value->sign = -1;
+					(*lexed)[x-1].type = omissible;
+				}
+			}
+		}
+		x++;
+	}
 
 }
 /*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
@@ -204,6 +239,12 @@ numType *parser(char *string)
 				free(cstack);
 			}
 			k++;
+			continue;
+		}
+		if (lexed[k].type == omissible)
+		{
+			k++;
+			continue;
 		}
 	}
 	//Do last operation

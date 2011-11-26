@@ -59,6 +59,7 @@ numType *divide(numType *dividend, numType *divisor)
 	temp_result = realloc(temp_result, sizeof(divType));
 	check_ptr(temp_result);
 	temp_result->digits = (estDigits(dividend, divisor)+1)/2;
+	temp_result->number = NULL;
 	temp_result->number = realloc(temp_result->number, temp_result->digits*sizeof(char));
 	check_ptr(temp_result->number);
 
