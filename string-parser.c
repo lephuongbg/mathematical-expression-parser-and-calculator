@@ -190,7 +190,7 @@ void post_lexer(instance **lexed)
 			//advance every element from that point to the next position
 			n++;
 			(*lexed) = realloc((*lexed), n * sizeof(instance));
-			i = n - 1;
+			i = n;
 			while (i > x + 1)
 			{
 				(*lexed)[i].type = (*lexed)[i-1].type;
@@ -297,17 +297,17 @@ void post_lexer(instance **lexed)
 /*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
 numType *do_math(enum TOKEN op, numType *n1, numType *n2)
 {
+	numType *result = NULL;
 	if (op == oplus)
-		return add(n1, n2);
+		result = add(n1, n2);
 	if (op == ominus)
-		return substract(n1, n2);
+		result = substract(n1, n2);
 	if (op == omultiply)
-		return multiply(n1, n2);
+		result = multiply(n1, n2);
 	if (op == odivide)
-		return divide(n1, n2);
+		result = divide(n1, n2);
 
-	numType *error = NULL;
-	return	error;		//return NULL upon error
+	return	result;		//return NULL upon error
 }
 
 /*PARSE THE MATHEMATICAL EXPRESSION AND RETURN THE RESULT*/
@@ -343,6 +343,7 @@ numType *parser(char *string)
 		{
 			while (c - 1 >= 0 && cstack[c-1]/2 >= lexed[k].type/2 && lexed[k].type/2 != 0)	//Compare priority
 			{
+				temp = NULL;
 				temp = do_math(cstack[c-1], &istack[i-2], &istack[i-1]);
 				clone(temp, &istack[i-2]);
 				c--;
@@ -356,7 +357,7 @@ numType *parser(char *string)
 				i--;
 				istack = realloc(istack, i * sizeof(numType));
 				check_ptr(istack);
-				free(temp);
+				free(temp); temp = NULL;
 			}
 			c++;
 			cstack = realloc(cstack, c * sizeof(enum TOKEN));
@@ -401,10 +402,12 @@ numType *parser(char *string)
 	//Do last operation
 	while (c - 1 >= 0)
 	{
+		temp = NULL;
 		temp = do_math(cstack[c - 1], &istack[i - 2], &istack[i - 1]);
 		clone (temp, &istack[i-2]);
 		i--;
 		c--;
+		free(temp);
 	}
 	return &istack[0];
 }

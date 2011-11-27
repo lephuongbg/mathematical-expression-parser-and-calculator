@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 /*SOME TYPE OF DATA USING IN THE PROGRAM*/
 typedef struct {

@@ -16,7 +16,7 @@ numType *add(numType *addend1, numType *addend2)
 	result->digits = max_len;		//Store the max number of the sum's digits
 	result->sign = 1;	//Default sign
 	result->number = NULL;
-	result->number = realloc(result->number, max_len*sizeof(char));
+	result->number = calloc(max_len, sizeof(char));
 	check_ptr(result->number);
 	//Done initialization
 

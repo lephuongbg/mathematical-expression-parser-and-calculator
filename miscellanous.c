@@ -140,7 +140,7 @@ void clone(numType *src, numType *des)
 	(*des).digits = src->digits;
 	(*des).sign = src->sign;
 	(*des).number = NULL;
-	(*des).number = realloc((*des).number, (*des).digits * sizeof(char));
+	(*des).number = calloc((*des).digits,  sizeof(char));
 	int i;
 	for (i = 0; i < (*des).digits; i++)
 		(*des).number[i] = src->number[i];

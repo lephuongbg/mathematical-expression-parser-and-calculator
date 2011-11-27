@@ -20,7 +20,7 @@ int estDigits(numType *dividend, numType *divisor)
 	return result;
 }
 typedef struct {
-	int *number;
+	int64_t *number;
 	char digits;
 	char sign;
 } divType;
@@ -34,9 +34,10 @@ numType *divide(numType *dividend, numType *divisor)
 	new_dividend = realloc(new_dividend, sizeof(numType));
 	check_ptr(new_dividend);
 	new_dividend->sign = dividend->sign;
-	new_dividend->digits = 2 + (dividend->digits+1)/2;
+	//new_dividend->digits = 2 + (dividend->digits+1)/2;
+	new_dividend->digits = dividend->digits + 1;
 	new_dividend->number = NULL;
-	new_dividend->number = realloc(new_dividend->number, new_dividend->digits*sizeof(char));
+	new_dividend->number = calloc(new_dividend->digits, sizeof(char));
 	check_ptr(new_dividend->number);
 
 	//For the new divisor
@@ -44,23 +45,25 @@ numType *divide(numType *dividend, numType *divisor)
 	new_divisor = realloc(new_divisor, sizeof(numType));
 	check_ptr(new_divisor);
 	new_divisor->sign = divisor->sign;
-	new_divisor->digits = 1 + (estDigits(dividend, divisor)+1)/2;
+	//new_divisor->digits = 1 + (estDigits(dividend, divisor)+1)/2;
+	new_divisor->digits = estDigits(dividend, divisor);
 	new_divisor->number = NULL;
-	new_divisor->number = realloc(new_divisor->number, new_divisor->digits*sizeof(char));
+	new_divisor->number = calloc(new_divisor->digits, sizeof(char));
 	check_ptr(new_divisor->number);
 
 	//For the remainder
-	int *remainder = NULL;
-	remainder = realloc(remainder, (new_divisor->digits) * sizeof(int));
+	int64_t *remainder = NULL;
+	remainder = calloc(new_divisor->digits, sizeof(int64_t));
 	check_ptr(remainder);
 
 	//For the temp result type
 	divType *temp_result = NULL;
 	temp_result = realloc(temp_result, sizeof(divType));
 	check_ptr(temp_result);
-	temp_result->digits = 1 + (estDigits(dividend, divisor)+1)/2;
+	//temp_result->digits = 1 + (estDigits(dividend, divisor)+1)/2;
+	temp_result->digits = estDigits(dividend, divisor);
 	temp_result->number = NULL;
-	temp_result->number = realloc(temp_result->number, temp_result->digits*sizeof(char));
+	temp_result->number = calloc(temp_result->digits, sizeof(char));
 	check_ptr(temp_result->number);
 
 	//For the final result
@@ -68,7 +71,8 @@ numType *divide(numType *dividend, numType *divisor)
 	if (estDigits(dividend, divisor) == 0)
 	{
 		final_result = realloc(final_result, sizeof(numType));
-		final_result->number = realloc(final_result->number, sizeof(char));
+		final_result->number = NULL;
+		final_result->number = calloc(1 , sizeof(char));
 		final_result->digits = 1;
 		final_result->sign = 1;
 		return final_result;
@@ -93,7 +97,7 @@ numType *divide(numType *dividend, numType *divisor)
 	}
 
 	/*APPLY THE FOURIER ALGORITHM NOW*/
-	int temp = 0;
+	int64_t temp = 0;
 	remainder[0] = (new_dividend->number[0]*100+new_dividend->number[1])%(new_divisor->number[0]);
 	temp_result->number[0] = (new_dividend->number[0]*100+new_dividend->number[1])/(new_divisor->number[0]);
 	for (k = 1; k < temp_result->digits; k++) //k here is the index for the new result array
@@ -122,5 +126,6 @@ numType *divide(numType *dividend, numType *divisor)
 	final_result->sign = dividend->sign * divisor->sign;
 
 	free(new_dividend); free(new_divisor); free(temp_result);
+	new_dividend = NULL; new_divisor = NULL; temp_result = NULL;
 	return final_result;
 }

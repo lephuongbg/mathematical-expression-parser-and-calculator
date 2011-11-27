@@ -16,7 +16,8 @@ numType *multiply(numType *n1, numType *n2)
 		int b;
 	} array[MAX_DIGITS][MAX_DIGITS];
 
-	int i, j, temp;
+	int i, j;
+	int64_t temp;
 	for (i = 0; i < MAX_DIGITS; i++)
 		for (j = 0; j < MAX_DIGITS; j++)
 		{
@@ -38,8 +39,9 @@ numType *multiply(numType *n1, numType *n2)
 	numType *result = NULL;
 	result = realloc(result, sizeof(numType));
 	check_ptr(result);
+	result->digits = n1->digits + n2->digits;
 	result->number = NULL;
-	result->number = realloc(result->number, (n1->digits + n2->digits) * sizeof(char));
+	result->number = calloc(result->digits, sizeof(char));
 	check_ptr(result->number);
 
 	/*CALCULATE THE PRODUCT*/
@@ -50,7 +52,8 @@ numType *multiply(numType *n1, numType *n2)
 
 	for (k = n1->digits + n2->digits - 1; k >= 0; k--)
 	{
-		result->number[k] += carry_up;		//Do the carry phase
+		temp = 0;
+		temp += carry_up;		//Do the carry phase
 		if (k <= n2->digits - 1)			//Change the start edge of the lattice array when needed
 			during_b = -1;
 
@@ -59,9 +62,9 @@ numType *multiply(numType *n1, numType *n2)
 		{
 			//Sum all elements on the current diagonal of the lattice
 			if (during_b == 1)
-				result->number[k] += array[i][j].b;
+				temp += array[i][j].b;
 			else
-				result->number[k] += array[i][j].a;
+				temp += array[i][j].a;
 
 			//Jump to the next lattice
 			if (during_b == 1)
@@ -79,8 +82,8 @@ numType *multiply(numType *n1, numType *n2)
 		}
 
 		//Make the "carry up" and store only the last digit of the calculated sum
-		carry_up = result->number[k] / 10;
-		result->number[k] = result->number[k] % 10;
+		carry_up = temp / 10;
+		result->number[k] = temp % 10;
 
 		//Change the start lattice on the edge
 		if (k > n2->digits)
@@ -90,8 +93,6 @@ numType *multiply(numType *n1, numType *n2)
 		during_b = 1;
 	}
 
-	//Store the total number of digits of the result
-	result->digits = n1->digits + n2->digits;
 	while (result->number[0] == 0)	//Remove redundant "0" at the left of the result
 	{
 		result->number++;

@@ -21,7 +21,7 @@ numType *substract(numType *minuend, numType *subtrahend)
 {
 	/*Initialize result structure*/
 	numType *result = NULL;
-	result = realloc(result, sizeof(numType));
+	result = calloc(1, sizeof(numType));
 	check_ptr(result);
 	result->number = NULL;
 	result->sign = 1;	//Consider default sign
@@ -33,7 +33,7 @@ numType *substract(numType *minuend, numType *subtrahend)
 	if (num_comp(minuend, subtrahend) == 0)
 	{
 		//Immediately return the result when they are equal
-		result->number = realloc(result->number, sizeof(char));
+		result->number = calloc(1, sizeof(char));
 		result->digits = 1;
 		result->sign = 1;
 		return result;
@@ -46,7 +46,7 @@ numType *substract(numType *minuend, numType *subtrahend)
 
 	//Store the max number of digits and initialize digit array
 	result->digits = max_len;
-	result->number = realloc(result->number, max_len*sizeof(char));
+	result->number = calloc(max_len, sizeof(char));
 	check_ptr(result->number);
 
 	/* Consider different case of the number pair */
