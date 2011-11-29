@@ -5,13 +5,16 @@
 * Feature:
 *# Has its own built-in arithmetic functions, which can calculate very big numbers.
 *# Uses stack-based mathematical expression parsing method (which is simple and fast).
-*# Uses strict rules to validate mathematical expressions (prevent crashes)
+*# Uses strict rules to validate mathematical expressions (prevent crashes).
 
 * Supported elements in the expression:
 *# Arithmetic operators: +, -, *, /
 *# Parentheses: (, ) 
 *# Numbers (of course)
- 
+
+* Note:
+*# The program's division is integer's division. 
+
 * Known bugs:
-*# Still have a limit of the number of digits
+*# <del>Still have a limit of the number of digits</del>
 *# Memory leak
