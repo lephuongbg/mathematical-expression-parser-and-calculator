@@ -17,4 +17,4 @@
 
 * Known bugs:
 *# <del>Still have a limit of the number of digits</del>
-*# Memory leak
+*# <del>Memory leak</del>
