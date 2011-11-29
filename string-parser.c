@@ -295,18 +295,46 @@ void post_lexer(instance **lexed)
 
 }
 /*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
+/*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
 numType *do_math(enum TOKEN op, numType *n1, numType *n2)
 {
 	numType *result = NULL;
-	if (op == oplus)
-		result = add(n1, n2);
-	if (op == ominus)
-		result = substract(n1, n2);
-	if (op == omultiply)
-		result = multiply(n1, n2);
-	if (op == odivide)
-		result = divide(n1, n2);
-
+	if (n1->digits < 19 && n2->digits < 19)
+	{
+		switch (op) {
+			case oplus:
+				result = extract(compile(n1)+compile(n2));
+				break;
+			case ominus:
+				result = extract(compile(n1)-compile(n2));
+				break;
+			case omultiply:
+				result = extract(compile(n1)*compile(n2));
+				break;
+			case odivide:
+				result = extract(compile(n1)/compile(n2));
+				break;
+			default:
+				break;
+		}
+	} else {
+		switch (op) {
+		case oplus:
+			result = add(n1, n2);
+			break;
+		case ominus:
+			result = substract(n1, n2);
+			break;
+		case omultiply:
+			result = multiply(n1, n2);
+			break;
+		case odivide:
+			result = divide(n1, n2);
+			break;
+		default:
+			break;
+	}
+	}
 	return	result;		//return NULL upon error
 }
 
