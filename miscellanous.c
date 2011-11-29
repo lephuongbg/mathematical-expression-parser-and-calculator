@@ -160,7 +160,7 @@ int64_t compile(numType *n)
 	int64_t result = 0;
 	for (i = 0; i < n->digits; i++)
 	{
-		result += n->number[i]*10;
+		result = result*10 + n->number[i];
 	}
 	return result*n->sign;
 }

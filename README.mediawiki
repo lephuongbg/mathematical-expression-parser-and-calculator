@@ -3,7 +3,7 @@
 '''This is a simple mathematical expresion calculator.'''
 
 * Feature:
-*# Has its own built-in arithmetic functions, which can calculate very big numbers (hundreds of digits).
+*# Has its own built-in arithmetic functions, which can calculate very big numbers.
 *# Uses stack-based mathematical expression parsing method (which is simple and fast).
 *# Uses strict rules to validate mathematical expressions (prevent crashes)
 
@@ -12,4 +12,6 @@
 *# Parentheses: (, ) 
 *# Numbers (of course)
  
-
+* Known bugs:
+*# Still have a limit of the number of digits
+*# Memory leak

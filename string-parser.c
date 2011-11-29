@@ -185,18 +185,23 @@ void post_lexer(instance **lexed)
 	while ((*lexed)[x].type != end)
 	{
 		//When encountering multiplying implicated condition
-		if (((*lexed)[x].type == number && x+1<n && (*lexed)[x+1].type == lparen) || ((*lexed)[x].type == rparen && (*lexed)[x+1].type == lparen) || ((*lexed)[x].type == rparen && (*lexed)[x+1].type == number))
+		if (((*lexed)[x].type == number && x+1<n && (*lexed)[x+1].type == lparen) ||			//1) A number beside an open paren
+				((*lexed)[x].type == rparen && (*lexed)[x+1].type == lparen) ||					//2) Close paren beside open paren
+				((*lexed)[x].type == rparen && (*lexed)[x+1].type == number) ||					//3) Close paren beside a number
+				(((*lexed)[x].type == ominus || (*lexed)[x].type == oplus) &&					//4) Minus and plus beside open paren,
+				x - 1 > 0 && (*lexed)[x-1].type >= oplus && (*lexed)[x-1].type <= odivide &&	//and after another operator
+				x + 1 < n && (*lexed)[x+1].type == lparen))
 		{
 			//advance every element from that point to the next position
 			n++;
-			(*lexed) = realloc((*lexed), n * sizeof(instance));
+			(*lexed) = realloc((*lexed), (n + 1) * sizeof(instance));
 			i = n;
 			while (i > x + 1)
 			{
 				(*lexed)[i].type = (*lexed)[i-1].type;
+				(*lexed)[i].value = NULL;
 				if ((*lexed)[i].type == number)
 				{
-					(*lexed)[i].value = NULL;
 					(*lexed)[i].value = realloc((*lexed)[i].value, sizeof(numType));
 					(*lexed)[i].value->digits = (*lexed)[i-1].value->digits;
 					(*lexed)[i].value->sign = (*lexed)[i-1].value->sign;
@@ -204,54 +209,23 @@ void post_lexer(instance **lexed)
 					(*lexed)[i].value->number = realloc((*lexed)[i].value->number, (*lexed)[i].value->digits * sizeof(char));
 					for (k = 0; k < (*lexed)[i].value->digits; k++)
 						(*lexed)[i].value->number[k] = (*lexed)[i-1].value->number[k];
-					(*lexed)[i-1].value = NULL;
+					free((*lexed)[i-1].value); (*lexed)[i-1].value = NULL;
 				}
 				i--;
 			}
-			//then add a multiply operator on the current position
+			//then add a multiply operator on the suitable position
 			(*lexed)[x+1].type = omultiply;
+			//If is condition 4: change the operator to a number with a corresponding sign
+			if ((*lexed)[x-1].type == ominus || (*lexed)[x-1].type == oplus)
+			{
+				(*lexed)[x-1].value = NULL;
+				if ((*lexed)[x-1].type == ominus)
+					(*lexed)[x-1].value = extract(-1);
+				else
+					(*lexed)[x-1].value = extract(1);
+				(*lexed)[x-1].type = number;
+			}
 		}
-		x++;
-	}
-	// 2) convert the + and - before an open parentheses and after another operator to +1 and -1
-	x = 0;
-	while ((*lexed)[x].type != end)
-	{
-		if ((*lexed)[x].type == ominus || (*lexed)[x].type == oplus)
-			if (x - 1 > 0 && (*lexed)[x-1].type >= oplus && (*lexed)[x-1].type <= odivide)
-				if (x + 1 < n && (*lexed)[x+1].type == lparen)
-				{
-					//advance every element from that point to the next position
-					n++;
-					(*lexed) = realloc((*lexed), n * sizeof(instance));
-					check_ptr(*lexed);
-					i = n;
-					while (i > x + 1)
-					{
-						(*lexed)[i].type = (*lexed)[i-1].type;
-						if ((*lexed)[i].type == number)
-						{
-							(*lexed)[i].value = NULL;
-							(*lexed)[i].value = realloc((*lexed)[i].value, sizeof(numType));
-							(*lexed)[i].value->digits = (*lexed)[i-1].value->digits;
-							(*lexed)[i].value->sign = (*lexed)[i-1].value->sign;
-							(*lexed)[i].value->number = NULL;
-							(*lexed)[i].value->number = realloc((*lexed)[i].value->number, (*lexed)[i].value->digits * sizeof(char));
-							for (k = 0; k < (*lexed)[i].value->digits; k++)
-								(*lexed)[i].value->number[k] = (*lexed)[i-1].value->number[k];
-							(*lexed)[i-1].value = NULL;
-						}
-						i--;
-					}
-					//then add a multiply operator on the next position
-					(*lexed)[x+1].type = omultiply;
-					(*lexed)[x].value = NULL;
-					if ((*lexed)[x].type == ominus)
-						(*lexed)[x].value = extract(-1);
-					else
-						(*lexed)[x].value = extract(1);
-					(*lexed)[x].type = number;
-				}
 		x++;
 	}
 
