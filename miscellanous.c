@@ -152,3 +152,15 @@ void err()
 	fprintf(stderr, "Invalid mathematical expression!!!\nExiting...\n");
 	exit(1);
 }
+
+//Compile an extracted number into normal form
+int64_t compile(numType *n)
+{
+	int i;
+	int64_t result = 0;
+	for (i = 0; i < n->digits; i++)
+	{
+		result += n->number[i]*10;
+	}
+	return result*n->sign;
+}

@@ -294,7 +294,7 @@ void post_lexer(instance **lexed)
 	}
 
 }
-/*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
+
 /*DO MATHEMATICAL ARITHMETIC BASED ON CORRESPONDING TYPE OF OPERATOR*/
 numType *do_math(enum TOKEN op, numType *n1, numType *n2)
 {

@@ -31,6 +31,7 @@ typedef struct {
 void check_ptr(void *ptr);
 //Put each number's digit into one array element
 numType *extract(int n);
+int64_t compile(numType *n);
 int num_comp(numType *n1, numType *n2);
 int abs_num_comp(numType *n1, numType *n2);
 void clone(numType *src, numType *des);
