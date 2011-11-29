@@ -53,7 +53,7 @@ numType *extract(int input)
 	/*Store each digit into an array's element*/
 	//Initialize the array member in the structure
 	n->number = NULL;
-	n->number = realloc(n->number, digits(input) * sizeof(int));
+	n->number = calloc(digits(input), sizeof(int));
 	if (n->number == NULL)
 	{
 		fprintf(stderr, "Error creating array!");

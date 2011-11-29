@@ -24,6 +24,7 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			lexed[index].type = oplus;
+			lexed[index].value = NULL;
 			index++;
 			i++;
 			break;
@@ -31,6 +32,7 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			lexed[index].type = ominus;
+			lexed[index].value = NULL;
 			index++;
 			i++;
 			break;
@@ -38,6 +40,7 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			lexed[index].type = omultiply;
+			lexed[index].value = NULL;
 			index++;
 			i++;
 			break;
@@ -45,6 +48,7 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			lexed[index].type = odivide;
+			lexed[index].value = NULL;
 			index++;
 			i++;
 			break;
@@ -79,6 +83,7 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			lexed[index].type = lparen;
+			lexed[index].value = NULL;
 			index++;
 			i++;
 			break;
@@ -86,16 +91,17 @@ instance *lexer(char *string)
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
 			lexed[index].type = rparen;
+			lexed[index].value = NULL;
 			index++;
 			i++;
 			break;
 		case ' ':
+		case '\n':
 			i++;
 			break;
 		default:
 			lexed = realloc(lexed, (index + 1) * sizeof(instance));
 			check_ptr(lexed);
-			//lexed[index].type = unknown;
 			printf("Unsupported character: %c\n Exiting...\n", string[i]);
 			exit(1);
 			index++;
@@ -107,6 +113,7 @@ instance *lexer(char *string)
 	lexed = realloc(lexed, (index + 1) * sizeof(instance));
 	check_ptr(lexed);
 	lexed[index].type = end;
+	lexed[index].value = NULL;
 	void post_lexer(instance **);
 	post_lexer(&lexed);
 	return lexed;
@@ -116,26 +123,18 @@ instance *lexer(char *string)
 void post_lexer(instance **lexed)
 {
 	int x = 0;
-	//Check for unbalanced parentheses' pairs.
+
+	/* First check loop */
 	int open_paren = 0, close_paren = 0;
 	while ((*lexed)[x].type != end)
 	{
+		//Check for unbalanced parentheses' pairs.
 		if ((*lexed)[x].type == lparen)
 			open_paren++;
 		else if ((*lexed)[x].type == rparen)
 			close_paren++;
-		x++;
-	}
-	if (open_paren != close_paren)
-	{
-		fprintf(stderr, "Unbalanced parentheses!!!\nExiting...\n");
-		exit(1);
-	}
 
-	//Check for negative or positive number with sign
-	x = 0;
-	while ((*lexed)[x].type != end)
-	{
+		//Check for negative or positive number with sign
 		if ((*lexed)[x].type == number)
 		{
 			if (x - 1 >= 0 && ((*lexed)[x-1].type == ominus || (*lexed)[x-1].type == oplus))
@@ -149,6 +148,12 @@ void post_lexer(instance **lexed)
 			}
 		}
 		x++;
+	}
+	//Report error after first check
+	if (open_paren != close_paren)
+	{
+		fprintf(stderr, "Unbalanced parentheses!!!\nExiting...\n");
+		exit(1);
 	}
 
 	//Remove omissible element from the array
@@ -164,14 +169,13 @@ void post_lexer(instance **lexed)
 				if ((*lexed)[i].type == number)
 				{
 					(*lexed)[i].value = NULL;
-					(*lexed)[i].value = realloc((*lexed)[i].value, sizeof(numType));
+					(*lexed)[i].value = calloc(1, sizeof(numType));
 					(*lexed)[i].value->digits = (*lexed)[i+1].value->digits;
 					(*lexed)[i].value->sign = (*lexed)[i+1].value->sign;
 					(*lexed)[i].value->number = NULL;
-					(*lexed)[i].value->number = realloc((*lexed)[i].value->number, (*lexed)[i].value->digits * sizeof(char));
+					(*lexed)[i].value->number = calloc((*lexed)[i].value->digits, sizeof(char));
 					for (k = 0; k < (*lexed)[i].value->digits; k++)
 						(*lexed)[i].value->number[k] = (*lexed)[i+1].value->number[k];
-					(*lexed)[i+1].value = NULL;
 				}
 			}
 			n--;
@@ -347,6 +351,7 @@ numType *parser(char *string)
 			{
 				temp = NULL;
 				temp = do_math(cstack[c-1], &istack[i-2], &istack[i-1]);
+				free(istack[i-2].number);
 				clone(temp, &istack[i-2]);
 				c--;
 				if (c == 0)
@@ -356,9 +361,12 @@ numType *parser(char *string)
 					cstack = realloc(cstack, c * sizeof(enum TOKEN));
 					check_ptr(cstack);
 				}
+				free(istack[i-1].number);
 				i--;
 				istack = realloc(istack, i * sizeof(numType));
 				check_ptr(istack);
+				if (temp->digits < 19)
+					free(temp->number);
 				free(temp); temp = NULL;
 			}
 			c++;
@@ -375,9 +383,14 @@ numType *parser(char *string)
 			{
 				temp = NULL;
 				temp = do_math(cstack[c-1], &istack[i-2], &istack[i-1]);
+				free(istack[i-2].number);
 				clone(temp, &istack[i-2]);
+
+				free(istack[i-1].number);
 				i--;
 				istack = realloc(istack, i * sizeof(numType)); check_ptr(istack);
+				if (temp->digits < 19)
+					free(temp->number);
 				free(temp);
 				c--;
 				cstack = realloc(cstack, c * sizeof(enum TOKEN)); check_ptr(cstack);
@@ -406,10 +419,34 @@ numType *parser(char *string)
 	{
 		temp = NULL;
 		temp = do_math(cstack[c - 1], &istack[i - 2], &istack[i - 1]);
+		free(istack[i-1].number);
+		free(istack[i-2].number);
 		clone (temp, &istack[i-2]);
 		i--;
 		c--;
+		if (temp->digits < 19)
+			free(temp->number);
 		free(temp);
 	}
-	return &istack[0];
+
+	//For returning result
+	temp = calloc(1, sizeof(numType));
+	check_ptr(temp);
+	clone(&istack[0], temp);
+	free(istack[0].number);
+	//Release unused memory
+	k = 0;
+	while (lexed[k].type != end)
+	{
+		if (lexed[k].type == number)
+		{
+			free(lexed[k].value->number);
+			free(lexed[k].value);
+		}
+		k++;
+	}
+	free(istack);
+	free(cstack);
+	free(lexed);
+	return temp;
 }
